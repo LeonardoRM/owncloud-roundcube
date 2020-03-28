@@ -41,9 +41,10 @@ class PageController extends \OCP\AppFramework\Controller
 		$l = \OC::$server->getL10N($this->appName);
 		\OC::$server->getNavigationManager()->setActiveEntry($this->appName);
 		$user = \OC::$server->getUserSession()->getUser()->getUID();
+		$email = \OC::$server->getUserSession()->getUser()->getEMailAddress();
 
-		if (strpos($user, '@') === false) {
-			Util::writeLog($this->appName, __METHOD__ . ": username ($user) is not an email address.", Util::WARN);
+		if ((strpos($user, '@') === false) && (strpos($email, '@') === false)) {
+			Util::writeLog($this->appName, __METHOD__ . ": username ($user) is not an email address and email ($email) is not valid also.", Util::WARN);
 			return new TemplateResponse($this->appName, "part.error.noemail", array('user' => $user));
 		}
 		if (!AuthHelper::login()) {

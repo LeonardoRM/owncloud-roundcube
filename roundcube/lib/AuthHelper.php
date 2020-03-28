@@ -45,8 +45,7 @@ class AuthHelper
     public static function postLogin($params) {
         \OCP\App::checkAppEnabled('roundcube');
         if (strpos($params['uid'], '@') === false) {
-            Util::writeLog('roundcube', __METHOD__ . ": username ({$params['uid']}) is not an email address.", Util::WARN);
-            return false;
+            Util::writeLog('roundcube', __METHOD__ . ": username ({$params['uid']}) is not an email address. Hence, the user needs to have an email address configured.", Util::DEBUG);
         }
         $via = \OC::$server->getRequest()->getRequestUri();
         if (preg_match(
@@ -85,8 +84,8 @@ class AuthHelper
         $b64crypted = \OC::$server->getRequest()->getCookie(self::COOKIE_RC_STRING);
         $encPrivKey = \OC::$server->getSession()->get(self::SESSION_RC_PRIVKEY);
         $password = Crypto::privateDecrypt($b64crypted, $encPrivKey, $passphrase);
-        $username = \OC::$server->getUserSession()->getUser()->getUID();
-        $backLogin = new BackLogin($username, $password);
+        $email = self::getUserEmail();
+        $backLogin = new BackLogin($email, $password);
         return $backLogin->login();
     }
 
@@ -96,9 +95,9 @@ class AuthHelper
      */
     public static function logout() {
         \OCP\App::checkAppEnabled('roundcube');
-        $user = \OC::$server->getUserSession()->getUser()->getUID();
-        if (strpos($user, '@') === false) {
-            Util::writeLog('roundcube', __METHOD__ . ": username ($user) is not an email address.", Util::WARN);
+        $email = self::getUserEmail();
+        if (strpos($email, '@') === false) {
+            Util::writeLog('roundcube', __METHOD__ . ": user email ($email) is not an email address.", Util::WARN);
             return false;
         }
         \OC::$server->getSession()->remove(self::SESSION_RC_PRIVKEY);
@@ -107,7 +106,7 @@ class AuthHelper
         setcookie(self::COOKIE_RC_STRING,   "-del-", 1, "/", "", true, true);
         setcookie(self::COOKIE_RC_SESSID,   "-del-", 1, "/", "", true, true);
         setcookie(self::COOKIE_RC_SESSAUTH, "-del-", 1, "/", "", true, true);
-        Util::writeLog('roundcube', __METHOD__ . ": Logout of user '$user' from RoundCube done.", Util::INFO);
+        Util::writeLog('roundcube', __METHOD__ . ": Logout of user '$email' from RoundCube done.", Util::INFO);
         return true;
     }
 
@@ -119,5 +118,24 @@ class AuthHelper
         if (isset($params['uid']) && isset($params['password'])) {
             self::login();
         }
+    }
+
+    /**
+     * Returns the email address of user, if any.
+     * If the uid is an email, it'll return it regardless of the user email.
+     * If neither the uid or the user email are an email, it'll return the uid.
+     */
+    public static function getUserEmail() {
+        $uid = \OC::$server->getUserSession()->getUser()->getUID();
+        if (strpos($uid, '@') === true) {
+            return $uid;
+        }
+
+        $email = \OC::$server->getUserSession()->getUser()->getEMailAddress();
+        if (strpos($email, '@') === true) {
+            return $email;
+        }
+
+        return $uid; // returns a non-empty default
     }
 }

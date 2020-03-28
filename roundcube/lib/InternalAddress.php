@@ -20,6 +20,7 @@
  */
 namespace OCA\RoundCube;
 
+use OCA\RoundCube\AuthHelper;
 use \OCP\Util;
 
 /**
@@ -38,14 +39,14 @@ class InternalAddress
     private $type     = null;
 
     public function __construct() {
-        $email = \OC::$server->getUserSession()->getUser()->getUID();
+        $email = AuthHelper::getUserEmail();
         $usrDom = explode('@', $email, 2);
         if (count($usrDom) === 2 && strlen($usrDom[1]) > 3) {
             $this->domain = $usrDom[1];
             $path = $this->getRCPath($this->domain);
             $this->computeProperties($path);
         } else {
-            Util::writeLog('roundcube', __METHOD__ . ": User ID is not an email.", Util::ERROR);
+            Util::writeLog('roundcube', __METHOD__ . ": User ID and email address are not valid emails.", Util::ERROR);
         }
     }
 
