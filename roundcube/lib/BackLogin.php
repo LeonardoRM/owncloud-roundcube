@@ -32,7 +32,7 @@ class BackLogin
     const FORM_URLENCODED = 'application/x-www-form-urlencoded';
 
     // Credentials
-    private $username;
+    private $email;
     private $password;
     // Config
     private $config;
@@ -44,12 +44,12 @@ class BackLogin
     private $rcSessionAuth = "";
 
     /**
-     * @param string $username Email address.
+     * @param string $email Email address.
      * @param string $password The password.
      * @return array/bool ['sessid', 'sessauth'] on success, false on error.
      */
-    public function __construct($username, $password) {
-        $this->username        = $username;
+    public function __construct($email, $password) {
+        $this->email           = $email;
         $this->password        = $password;
         $this->config          = \OC::$server->getConfig();
         $this->enableSSLVerify = $this->config->getAppValue('roundcube', 'enableSSLVerify', true);
@@ -85,7 +85,7 @@ class BackLogin
             "_action"   => "login",
             "_timezone" => $inputs["_timezone"]["value"],
             "_url"      => $inputs["_url"]["value"],
-            "_user"     => $this->username,
+            "_user"     => $this->email,
             "_pass"     => $this->password
         );
         // Post login form.

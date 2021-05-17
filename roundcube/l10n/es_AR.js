@@ -12,7 +12,7 @@ OC.L10N.register(
     "Some inputs are not valid." : "Algunas entradas no son válidas.",
     "Application settings successfully stored." : "Configuración de la aplicación guardada con éxito.",
     "Unable to login into roundcube. There are login errors. Relogin to ownCloud." : "No se puede hacer login en RoundCube. Hay errores de login. Salir y volver a iniciar sesión en la Nube.",
-    "Username '%s' is not an email address." : "El usuario '%s' no es un email válido.",
+    "Username '%s' is not a valid email address, neither the user email." : "El usuario '%s' no es un email válido, tampoco el email del usuario.",
     "Default RC installation path" : "Ruta por defecto al RC",
     "Default path relative to ownCloud server (%s)." : "Ruta por defecto relativa al servidor ownCloud (%s).",
     "Per email domain RC installations" : "Rutas a RC por dominio de email",

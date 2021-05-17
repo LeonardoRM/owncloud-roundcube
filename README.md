@@ -7,6 +7,8 @@ The app needed an update to work with newer versions of ownCloud. This app doesn
 
 ## Features
 - Auto login
+- RC login with username (uid must be an email)
+- RC login with user email (only when uid is not an email)
 - Enable/disable SSL verification
 - Show/hide RC topline bar
 - Default path to RC

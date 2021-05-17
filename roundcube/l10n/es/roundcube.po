@@ -2,50 +2,50 @@
 msgid "Webmail"
 msgstr "Webmail"
 
-#: lib/Controller/SettingsController.php:41
+#: lib/Controller/SettingsController.php:60
 msgid "Not submitted for us."
 msgstr "No enviado para nosotros."
 
-#: lib/Controller/SettingsController.php:55
+#: lib/Controller/SettingsController.php:74
 msgid "Default RC installation path can't be an empty string."
 msgstr "La ruta por defecto de la instalación del RC no puede ser vacía."
 
-#: lib/Controller/SettingsController.php:57
+#: lib/Controller/SettingsController.php:76
 msgid "Default path must be a url relative to this server."
 msgstr "La ruta por defecto debe ser una url relativa a este servidor."
 
-#: lib/Controller/SettingsController.php:63
+#: lib/Controller/SettingsController.php:82
 msgid "A domain is not valid."
 msgstr "Uno de los dominios no es válido."
 
-#: lib/Controller/SettingsController.php:71
+#: lib/Controller/SettingsController.php:90
 msgid "A path is not valid."
 msgstr "Una de las rutas no es válida."
 
-#: lib/Controller/SettingsController.php:76
+#: lib/Controller/SettingsController.php:95
 msgid "Paths must be urls relative to this server."
 msgstr "Las rutas deben ser urls relativas a este servidor."
 
-#: lib/Controller/SettingsController.php:83
+#: lib/Controller/SettingsController.php:102
 msgid "Unpaired domains and paths."
 msgstr "El número de dominios y rutas no es parejo."
 
-#: lib/Controller/SettingsController.php:89
+#: lib/Controller/SettingsController.php:108
 msgid "Some inputs are not valid."
 msgstr "Algunas entradas no son válidas."
 
-#: lib/Controller/SettingsController.php:112
+#: lib/Controller/SettingsController.php:131
 msgid "Application settings successfully stored."
 msgstr "Configuración de la aplicación guardada con éxito."
 
-#: templates/part.error.login.php:2
+#: templates/part.error.login.php:25
 msgid "Unable to login into roundcube. There are login errors. Relogin to ownCloud."
 msgstr "No se puede hacer login en RoundCube. Hay errores de login. Salir y volver a iniciar sesión en la Nube."
 
-#: templates/part.error.noemail.php:2
+#: templates/part.error.noemail.php:23
 #, php-format
-msgid "Username '%s' is not an email address."
-msgstr "El usuario '%s' no es un email válido."
+msgid "Username '%s' is not a valid email address, neither the user email."
+msgstr "El usuario '%s' no es un email válido, tampoco el email del usuario."
 
 #: templates/tpl.adminSettings.php:35
 msgid "Default RC installation path"

@@ -4,7 +4,22 @@ use Locale::PO;
 use Cwd;
 use Data::Dumper;
 use File::Path;
-use File::Basename;
+use Config::Tiny;
+use File::Spec;
+use String::Util 'trim';
+
+# ubuntu dependencies: liblocale-po-perl libconfig-tiny-perl libsharyanto-string-util-perl
+#
+# cpan install String::Util
+
+# https://help.nextcloud.com/t/app-l10n-for-generating-text-without-transifex-translation/26448/6
+
+# Steps/Tasks:
+# - read: loop on all files in .. and generate appname.pot
+# - update:
+#    - for all languages defined in config generate language.po out of
+#      appname.pot (using the unix command `msgmerge`)
+# - write: for all language.po generate .json and .js
 
 sub crawlFiles{
 	my( $dir ) = @_;
@@ -54,6 +69,8 @@ sub getPluralInfo {
 }
 
 sub init() {
+	# check xgettext has a version with JavaScript support
+
 	# let's get the version from stdout of xgettext
 	my $out = `xgettext --version`;
 	# we assume the first line looks like this 'xgettext (GNU gettext-tools) 0.19.3'
@@ -68,43 +85,44 @@ sub init() {
 	}
 }
 
-init();
+init(); # check xgettext has a version with JavaScript support
 
-my $app = shift( @ARGV );
 my $task = shift( @ARGV );
+my $place = '..';
 
-die( "Usage: l10n.pl app task\ntask: read, write\n" ) unless $app && $task;
+die( "Usage: l10n.pl task\ntask: read, update, write\n" ) unless $task && $place;
 
 # Our current position
 my $whereami = cwd();
 die( "Program must be executed in a l10n-folder called 'l10n'" ) unless $whereami =~ m/\/l10n$/;
 
-# Where are i18n-files?
-my $pwd = dirname(cwd());
-my @dirs = ();
-push(@dirs, $pwd);
+# Where are i18n-files? list of all applications,
+# only the actual application is considered
+my @dirs = (Cwd::realpath(File::Spec->updir));
 
 # Languages
-my @languages = ();
-opendir( DIR, '.' );
-my @files = readdir( DIR );
-closedir( DIR );
-foreach my $i ( @files ){
-	push( @languages, $i ) if -d $i && substr( $i, 0, 1 ) ne '.';
-}
+my $Config = Config::Tiny->new;
+$Config = Config::Tiny->read('l10n.conf', 'utf8');
+my $languages_conf = $Config->{main}->{languages};
+my @languages = map { trim($_) } split(',', $languages_conf);
+print "Languages: "; foreach my $l (@languages) {	print "[$l]";	}	print "\n";
+my $source_language = trim($Config->{main}->{source_language});
 
 if( $task eq 'read' ){
-	rmtree( 'templates' );
-	mkdir( 'templates' ) unless -d 'templates';
 	print "Mode: reading\n";
 	foreach my $dir ( @dirs ){
 		my @temp = split( /\//, $dir );
+		my $app = pop( @temp );
 		chdir( $dir );
+		# parses the app info and creates
+		# a dummy file specialAppInfoFakeDummyForL10nScript.php
+		`php $whereami/../build/l10nParseAppInfo.php`;
 		my @totranslate = crawlFiles('.');
 		my %ignore = readIgnorelist();
-		my $output = "${whereami}/templates/$app.pot";
+		my $output = "${whereami}/$app.pot";
+		rmtree($output);
+		`touch $output`;
 		print "  Processing $app\n";
-
 		foreach my $file ( @totranslate ){
 			next if $ignore{$file};
 			my $keywords = '';
@@ -117,25 +135,48 @@ if( $task eq 'read' ){
 			my $language = ( $file =~ /\.js$/ ? 'Javascript' : 'PHP');
 			my $joinexisting = ( -e $output ? '--join-existing' : '');
 			print "    Reading $file\n";
-			`xgettext --output="$output" $joinexisting $keywords --language=$language "$file" --add-comments=TRANSLATORS --from-code=UTF-8 --package-version="10.0.0" --package-name="ownCloud $app" --msgid-bugs-address="translations\@owncloud.org"`;
+			`xgettext --omit-header --output="$output" $joinexisting $keywords --language=$language "$file" --from-code=UTF-8`;
 		}
+		rmtree( "specialAppInfoFakeDummyForL10nScript.php" );
 		chdir( $whereami );
 	}
+}
+elsif( $task eq 'update' ){
+	print "Mode: updating\n";
+	foreach my $dir ( @dirs ){
+		my @temp = split( /\//, $dir );
+		my $app = pop( @temp );
+		print "  Processing $app\n";
+	  foreach my $language (@languages) {
+			print "    Language [$language] ";
+		  `touch $language.po` unless -e "$language.po";
+		  `msgmerge -N --no-wrap -F --output-file=$language.po $language.po $app.pot`;
+	  }
+  }
 }
 elsif( $task eq 'write' ){
 	print "Mode: write\n";
 	foreach my $dir ( @dirs ){
 		my @temp = split( /\//, $dir );
+		my $app = pop( @temp );
 		chdir( $dir.'/l10n' );
 		print "  Processing $app\n";
 		foreach my $language ( @languages ){
-			next if $language eq 'templates';
+			print "    Language: [$language] ";
 
-			my $input = "${whereami}/$language/$app.po";
-			next unless -e $input;
+			unless ($language ne $source_language) {
+				print "original language doesn't need translation\n";
+				next;
+			}
 
-			print "    Language $language\n";
+			my $input = "${whereami}/$language.po";
+			unless (-e $input) {
+				print "file $language.po not found\n";
+				next;
+			}
+
 			my $array = Locale::PO->load_file_asarray( $input );
+
 			# Create array
 			my @strings = ();
 			my @js_strings = ();
@@ -170,14 +211,12 @@ elsif( $task eq 'write' ){
 					push( @js_strings, $string->msgid()." : ".$string->msgstr());
 				}
 			}
+			print "strings: ", $#strings+1, $#strings == -1 ? ", skipped":"", "\n";
 			next if $#strings == -1; # Skip empty files
 
 			for (@strings) {
 				s/\$/\\\$/g;
 			}
-
-			# delete old php file
-			unlink "$language.php";
 
 			# Write js file
 			open( OUT, ">$language.js" );
