@@ -127,7 +127,7 @@ class AuthHelper
      */
     public static function getUserEmail() {
         $uid = \OC::$server->getUserSession()->getUser()->getUID();
-        if (strpos($uid, '@') === true) {
+        if (strpos($uid, '@') !== false) {
             return $uid;
         }
 
