@@ -132,7 +132,7 @@ class AuthHelper
         }
 
         $email = \OC::$server->getUserSession()->getUser()->getEMailAddress();
-        if (strpos($email, '@') === true) {
+        if (strpos($email, '@') !== false) {
             return $email;
         }
 
