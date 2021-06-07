@@ -7,27 +7,34 @@ var Roundcube = Roundcube || {};
  */
 Roundcube.hideTopLine = function() {
 	var rcf = $("#roundcubeFrame");
-	if (!rcf[0].contentWindow.rcmail.env.skin.includes("larry")) {
+	var rcTheme = rcf[0].contentWindow.rcmail.env.skin;
+	var rcDocument = rcf[0].contentWindow.document;
+
+	if (rcTheme === "elastic") {
+		rcDocument.querySelector("#layout-menu .popover-header").style.display = "none";
+		rcDocument.querySelector("#layout-menu .logout").style.display = "none";
 		return;
 	}
-	var rcfContents = rcf.contents();
-	// User shouldn't be able to logout from rc, but from outer app:
-	// 1. #topline has a logout button which we don't want, so remove it and
-	// adjust the top attribute of #mainscreen. Reduce height if no toolbar.
-	// 2. Also remove button to show/hide the #topline and adjust the #taskbar.
-	// 3. Remove other logout buttons.
-	var toplineHeight = rcfContents.find("#topline").outerHeight(),
-		mainscreenTop = parseInt(rcfContents.find('#mainscreen').css('top')),
-		toolbarHeight = 40,
-		newMainscreenTop = mainscreenTop - toplineHeight;
-	rcfContents.find("#topline").remove(); // [1]
-	if (rcfContents.find("#mainscreen .toolbar").length === 0) {
-		newMainscreenTop -= toolbarHeight;
+	else if (rcTheme.includes("larry")) {
+		var rcfContents = rcf.contents();
+		// User shouldn't be able to logout from rc, but from outer app:
+		// 1. #topline has a logout button which we don't want, so remove it and
+		// adjust the top attribute of #mainscreen. Reduce height if no toolbar.
+		// 2. Also remove button to show/hide the #topline and adjust the #taskbar.
+		// 3. Remove other logout buttons.
+		var toplineHeight = rcfContents.find("#topline").outerHeight(),
+			mainscreenTop = parseInt(rcfContents.find('#mainscreen').css('top')),
+			toolbarHeight = 40,
+			newMainscreenTop = mainscreenTop - toplineHeight;
+		rcfContents.find("#topline").remove(); // [1]
+		if (rcfContents.find("#mainscreen .toolbar").length === 0) {
+			newMainscreenTop -= toolbarHeight;
+		}
+		rcfContents.find('#mainscreen').css('top', newMainscreenTop); // [1]
+		rcfContents.find('#taskbar .minmodetoggle').remove(); // [2]
+		rcfContents.find('#taskbar').css('padding-right', 0); // [2]
+		rcfContents.find('.button-logout').remove(); // [3]
 	}
-	rcfContents.find('#mainscreen').css('top', newMainscreenTop); // [1]
-	rcfContents.find('#taskbar .minmodetoggle').remove(); // [2]
-	rcfContents.find('#taskbar').css('padding-right', 0); // [2]
-	rcfContents.find('.button-logout').remove(); // [3]
 };
 
 /**
