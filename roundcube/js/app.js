@@ -13,9 +13,7 @@ Roundcube.hideTopLine = function() {
 	if (rcTheme === "elastic") {
 		rcDocument.querySelector("#layout-menu .popover-header").style.display = "none";
 		rcDocument.querySelector("#layout-menu .logout").style.display = "none";
-		return;
-	}
-	else if (rcTheme.includes("larry")) {
+	} else if (rcTheme.includes("larry")) {
 		var rcfContents = rcf.contents();
 		// User shouldn't be able to logout from rc, but from outer app:
 		// 1. #topline has a logout button which we don't want, so remove it and
