@@ -180,7 +180,6 @@ class BackLogin
                         'Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
                         'Accept-Encoding: identity',
                         'Content-Type: ' . self::FORM_URLENCODED,
-                        'Content-Length: ' . strlen($postData),
                         'Cache-Control: no-cache',
                         'Pragma: no-cache'
                     );
